@@ -45,7 +45,7 @@ router.get('/reflected', (req, res) => {
     <h2>Payload thử nghiệm</h2>
     <p>Dán payload sau vào ô tìm kiếm (hoặc bấm nút mở link tấn công):</p>
     <pre id="payload">${escapeHtml(payload)}</pre>
-    <button class="btn ghost" onclick="copyText('payload', this)">📋 Sao chép payload</button>
+    <button class="btn ghost" data-copy="payload">📋 Sao chép payload</button>
     <a class="btn" href="${attackUrl}">🚀 Mở link tấn công mẫu</a>
     <div class="hint">
       Payload khác để thử: <code>${escapeHtml("<img src=x onerror=alert('Reflected')>")}</code>.

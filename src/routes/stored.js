@@ -50,12 +50,12 @@ router.get('/stored', (req, res) => {
     <h2>Payload thử nghiệm</h2>
     <p><strong>1)</strong> Payload đơn giản chứng minh script chạy:</p>
     <pre id="p1">${escapeHtml("<script>alert('Stored XSS')</script>")}</pre>
-    <button class="btn ghost" onclick="copyText('p1', this)">📋 Sao chép</button>
+    <button class="btn ghost" data-copy="p1">📋 Sao chép</button>
 
     <p style="margin-top:22px"><strong>2)</strong> <span class="danger">Payload đánh cắp cookie</span> —
     gửi cookie phiên của nạn nhân về “server của hacker” (<code>${HACKER_URL}</code>):</p>
     <pre id="p2">${escapeHtml(stealPayload)}</pre>
-    <button class="btn ghost" onclick="copyText('p2', this)">📋 Sao chép</button>
+    <button class="btn ghost" data-copy="p2">📋 Sao chép</button>
 
     <div class="hint">
       Gửi payload <b>(2)</b> khi đang ở chế độ CÓ LỖ HỔNG, rồi mở <code>${HACKER_URL}</code> để thấy cookie bị trộm.

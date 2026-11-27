@@ -4,3 +4,7 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 *.log
+
+# Ảnh chụp & file tạm khi test bằng Playwright
+.playwright-mcp/
+*.png

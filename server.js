@@ -30,14 +30,24 @@ app.use((req, res, next) => {
     sameSite: 'lax',
   });
 
-  // Content-Security-Policy: o che do SAFE, chi cho phep tai tai nguyen tu chinh
-  // trang nay -> chan inline script va chan gui du lieu sang server hacker.
+  // Content-Security-Policy: o che do SAFE.
+  // - script-src 'self'    : chi cho phep JS tu chinh trang nay (/app.js, /dom.js),
+  //                          CHAN moi <script> noi tuyen va thuoc tinh onerror/onclick
+  //                          cua hacker -> payload XSS khong chay.
+  // - img-src 'self'       : chan gui du lieu (cookie) sang server hacker qua Image().
+  // - style-src cho phep 'unsafe-inline' de CSS van hoat dong (style khong phai vector XSS o day).
   if (safe) {
-    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self'");
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'"
+    );
   }
 
   next();
 });
+
+// Tranh loi 404 favicon tren console (tra ve 204 No Content)
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 // Phuc vu file tinh (vd trang DOM) - khong de lo thu muc src
 app.use(express.static('public'));
