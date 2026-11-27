@@ -170,6 +170,36 @@ const STYLE = `
     opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 100;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ===== Giao diện riêng cho chế độ AN TOÀN: đổi màu nhấn sang xanh lá ===== */
+  .mode-safe { background: #f0fdf4; }
+  .mode-safe nav { background: #052e16; }
+  .mode-safe nav .brand span { color: #4ade80; }
+  .mode-safe nav a.link:hover { border-bottom-color: #4ade80; }
+  .mode-safe .card { border-color: #bbf7d0; box-shadow: 0 4px 20px rgba(5,46,22,.07); }
+  .mode-safe .btn { background: var(--safe); box-shadow: 0 2px 10px rgba(16,185,129,.3); }
+  .mode-safe .btn:hover { background: #059669; box-shadow: 0 5px 16px rgba(16,185,129,.45); }
+  .mode-safe .btn.ghost { background: #dcfce7; color: #065f46; box-shadow: none; }
+  .mode-safe .btn.ghost:hover { background: #bbf7d0; }
+  .mode-safe input[type=text]:focus, .mode-safe textarea:focus {
+    border-color: var(--safe); box-shadow: 0 0 0 4px rgba(16,185,129,.18);
+  }
+  .mode-safe :not(pre) > code { background: #dcfce7; color: #047857; }
+  .mode-safe .result { border-left-color: var(--safe); background: #f0fdf4; }
+  .mode-safe .comment .who { color: #047857; }
+  .mode-safe .comment .who::before { background: linear-gradient(135deg, #4ade80, #10b981); }
+  .mode-safe .steps li::before { background: var(--safe); }
+  .mode-safe .tile:hover { border-color: var(--safe); box-shadow: 0 10px 24px rgba(5,46,22,.12); }
+  .mode-safe a { color: #047857; }
+
+  /* Huy hiệu "đã bảo vệ" chỉ hiện ở chế độ AN TOÀN */
+  .mode-vuln .shield-note { display: none; }
+  .shield-note {
+    display: flex; align-items: center; gap: 12px; background: var(--safe-soft);
+    border: 1px solid #a7f3d0; border-left: 4px solid var(--safe); border-radius: 12px;
+    padding: 14px 18px; margin-bottom: 22px; color: #065f46; font-weight: 600;
+  }
+  .shield-note .ico { font-size: 1.5rem; }
 `;
 
 // JS nhỏ cho nút "Sao chép" (hiện toast). Nằm trong trang nạn nhân.
@@ -201,7 +231,7 @@ function layout(title, bodyHtml) {
   <title>${escapeHtml(title)} · XSS Lab</title>
   <style>${STYLE}</style>
 </head>
-<body>
+<body class="mode-${modeClass}">
   <div class="statusbar ${modeClass}">
     <div class="mode">
       <span class="dot"></span>
@@ -220,6 +250,10 @@ function layout(title, bodyHtml) {
     <a class="link" href="/dom">DOM-based XSS</a>
   </nav>
   <div class="wrap">
+    <div class="shield-note">
+      <span class="ico">🛡️</span>
+      <span>Đang ở chế độ AN TOÀN — output đã được escape, cookie đặt cờ HttpOnly và áp dụng Content-Security-Policy. Các payload XSS sẽ bị vô hiệu hóa.</span>
+    </div>
     ${bodyHtml}
   </div>
   <div class="toast" id="toast"></div>
