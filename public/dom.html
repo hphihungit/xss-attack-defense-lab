@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DOM-based XSS · XSS Lab</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #fff;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --brand: #6366f1;
+      --brand-dark: #4f46e5;
+      --danger: #ef4444;
+      --safe: #10b981;
+      --warn: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+      margin: 0;
+      background: #f1f5f9;
+      color: var(--ink);
+      line-height: 1.65;
+    }
+
+    nav {
+      background: var(--bg);
+      padding: 0 24px;
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, .2);
+    }
+
+    nav .brand {
+      color: #fff;
+      font-weight: 800;
+      padding: 14px 16px 14px 0;
+      letter-spacing: .5px;
+    }
+
+    nav .brand span {
+      color: #818cf8;
+    }
+
+    nav a.link {
+      color: #cbd5e1;
+      text-decoration: none;
+      padding: 14px 16px;
+      font-size: .95rem;
+      border-bottom: 3px solid transparent;
+      transition: color .15s, border-color .15s;
+    }
+
+    nav a.link:hover {
+      color: #fff;
+      border-bottom-color: #818cf8;
+    }
+
+    .wrap {
+      max-width: 900px;
+      margin: 28px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 26px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, .06);
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 1.7rem;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 1.25rem;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.02rem;
+    }
+
+    code,
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 10px;
+      font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    }
+
+    code {
+      padding: 2px 7px;
+      font-size: .9em;
+    }
+
+    :not(pre)>code {
+      background: #eef2ff;
+      color: var(--brand-dark);
+    }
+
+    pre {
+      padding: 16px 18px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-size: .9rem;
+      border: 1px solid #1e293b;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--brand);
+      color: #fff;
+      border: 0;
+      padding: 11px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      margin-top: 12px;
+      font-size: .95rem;
+      transition: background .15s, transform .1s;
+      box-shadow: 0 2px 10px rgba(99, 102, 241, .3);
+    }
+
+    .btn:hover {
+      background: var(--brand-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn.ghost {
+      background: #f1f5f9;
+      color: var(--ink);
+      box-shadow: none;
+    }
+
+    .btn.ghost:hover {
+      background: #e2e8f0;
+    }
+
+    .hint {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 4px solid var(--warn);
+      border-radius: 10px;
+      padding: 13px 16px;
+      font-size: .93rem;
+      margin-top: 16px;
+    }
+
+    .hint b {
+      color: #b45309;
+    }
+
+    .output {
+      border: 2px dashed var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 12px;
+      min-height: 48px;
+      background: #f8fafc;
+      transition: border-color .2s;
+    }
+
+    .switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      margin: 8px 0 4px;
+      cursor: pointer;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    .switch input {
+      display: none;
+    }
+
+    .switch .track {
+      width: 46px;
+      height: 26px;
+      border-radius: 999px;
+      background: #cbd5e1;
+      position: relative;
+      transition: background .2s;
+      flex: 0 0 auto;
+    }
+
+    .switch .track::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform .2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+    }
+
+    .switch input:checked+.track {
+      background: var(--safe);
+    }
+
+    .switch input:checked+.track::after {
+      transform: translateX(20px);
+    }
+
+    .pill {
+      display: inline-block;
+      font-size: .78rem;
+      font-weight: 700;
+      padding: 3px 11px;
+      border-radius: 999px;
+    }
+
+    .pill.vuln {
+      background: #fef2f2;
+      color: var(--danger);
+    }
+
+    .pill.safe {
+      background: #ecfdf5;
+      color: var(--safe);
+    }
+
+    #modeLabel {
+      margin-left: 4px;
+    }
+
+    .danger {
+      color: var(--danger);
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+  <nav>
+    <span class="brand">Vuln<span>Bank</span></span>
+    <a class="link" href="/">Trang chủ</a>
+    <a class="link" href="/reflected">Reflected XSS</a>
+    <a class="link" href="/stored">Stored XSS</a>
+    <a class="link" href="/dom">DOM-based XSS</a>
+  </nav>
+  <div class="wrap">
+    <div class="card">
+      <h1>🧩 DOM-based XSS</h1>
+      <p class="lead">Khác với hai loại trên, lỗ hổng này nằm <strong>hoàn toàn ở phía trình duyệt (client)</strong>:
+        JavaScript đọc dữ liệu từ URL (phần sau dấu <code>#</code>, tức <code>location.hash</code>)
+        rồi gán vào trang bằng <code>innerHTML</code> — không hề gửi lên máy chủ.</p>
+
+      <label class="switch">
+        <input type="checkbox" id="safeToggle">
+        <span class="track"></span>
+        <span>Chế độ AN TOÀN (dùng textContent thay vì innerHTML) <span id="modeLabel" class="pill vuln">CÓ LỖ
+            HỔNG</span></span>
+      </label>
+
+      <p style="margin-top:18px">Xin chào:</p>
+      <div class="output" id="greeting">(chưa có dữ liệu)</div>
+    </div>
+
+    <div class="card">
+      <h2>Cách thử</h2>
+      <p>Thêm payload vào sau dấu <code>#</code> trên thanh địa chỉ rồi nhấn Enter (trang sẽ đọc lại hash):</p>
+      <pre id="payload">#&lt;img src=x onerror="alert('DOM XSS')"&gt;</pre>
+      <button class="btn ghost" id="copyBtn">📋 Sao chép payload</button>
+      <a class="btn" href="#<img src=x onerror=&quot;alert('DOM XSS')&quot;>">🚀 Thử payload ngay</a>
+      <div class="hint">
+        Ở chế độ mặc định (<span class="danger">CÓ LỖ HỔNG</span>), hash được gán bằng <code>innerHTML</code> nên ảnh
+        lỗi
+        kích hoạt <code>onerror</code> → alert chạy. Bật công tắc “Chế độ AN TOÀN” rồi thử lại: dùng
+        <code>textContent</code> nên payload chỉ hiển thị dạng văn bản, không chạy.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Đọc dữ liệu từ phần hash của URL và hiển thị ra trang
+    function renderGreeting() {
+      var data = decodeURIComponent(location.hash.slice(1)); // bỏ dấu '#' ở đầu
+      var box = document.getElementById('greeting');
+      var safe = document.getElementById('safeToggle').checked;
+
+      if (!data) { box.textContent = '(chưa có dữ liệu)'; return; }
+
+      if (safe) {
+        // PHÒNG THỦ: textContent không diễn giải HTML -> an toàn
+        box.textContent = data;
+      } else {
+        // LỖ HỔNG: innerHTML diễn giải chuỗi thành HTML -> script/onerror chạy được
+        box.innerHTML = data;
+      }
+    }
+
+    function updateModeLabel() {
+      var safe = document.getElementById('safeToggle').checked;
+      var lbl = document.getElementById('modeLabel');
+      lbl.textContent = safe ? 'AN TOÀN' : 'CÓ LỖ HỔNG';
+      lbl.className = 'pill ' + (safe ? 'safe' : 'vuln');
+    }
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      navigator.clipboard.writeText("#<img src=x onerror=\"alert('DOM XSS')\">");
+      this.textContent = '✓ Đã sao chép';
+      var self = this;
+      setTimeout(function () { self.textContent = '📋 Sao chép payload'; }, 1600);
+    });
+
+    window.addEventListener('hashchange', renderGreeting);
+    document.getElementById('safeToggle').addEventListener('change', function () {
+      updateModeLabel();
+      renderGreeting();
+    });
+    updateModeLabel();
+    renderGreeting();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "xss-attack-defense-lab",
+  "version": "1.0.0",
+  "description": "Lab mo phong tan cong va phong thu XSS (bai tap lon An toan thong tin) - chay cuc bo localhost cho muc dich hoc tap",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "hacker": "node hacker-server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
